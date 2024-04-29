@@ -133,33 +133,7 @@ In `flask_github_actions.github/workflows` folder you will see these files:
 - test.yml - Will test the Flask Application with unittest package
 
 
-# Requirements List:
-- :white_check_mark: Create a Dockerfile for running this repository's Python server in Docker
-  - :white_check_mark: When you navigate to the `/status` endpoint, it should respond with `{"result": "success"}`
-- :white_check_mark: Create Terraform file(s) for spinning up the needed infrastructure via a cloud provider
-  - :white_check_mark: There should be a publicly accessible `/status` endpoint that responds with `{"result": "success"}`~~
 
-# Stretch Goals List:
-- :white_check_mark: Build and push container image via CI
-  - :white_check_mark: You can use either GitHub actions or Travis
-  - :white_check_mark: Use any container repository that you like, public or private
-- :white_check_mark: Write tests for your code and run them via CI
-  - :white_check_mark: You can use GitHub actions or Travis
-  - :white_check_mark: Tests should run automatically when a pull request is created against the main branch
-  - :white_check_mark: Grant `zopz` write access to the repository to test
-- :point_right::point_left: Write Kubernetes manifests or Helm charts to deploy the container into a Kubernetes cluster (I was able to do this with the Kubernetes provider if that counts.)
-  - You do not need to provide Terraform code for provisioning the cluster, you can assume an existing cluster
-  - :white_check_mark: The application should be exposed as a service such that it can be accessed from a browser (local IP is fine)
-- :x: Create a `/ip` endpoint that returns the city and state of the IP requesting the page (I would like to know how this can be done. I was only able to retrieve the eks internal ip. Not implemented.)
-  - You are free to use any third-party software/services to convert the IP to location data
-  - The response should be returned as a JSON result matching the following model:
-    ```
-    {
-    "ip": "string",
-    "city": "string",
-    "state": "string"
-    }
-    ```
 
 ## Authors
 
