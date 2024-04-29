@@ -1,0 +1,71 @@
+
+name: Format Terraform Checker & Commenter
+on:
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  terraform_fmt:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.14.6
+
+      - name: Terraform Fmt
+        id: fmt
+        run: terraform fmt --recursive --diff --write=false
+        continue-on-error: true
+      - name: Comment on PR 
+        uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        env:
+          format_out: ${{ steps.fmt.outputs.stdout }}
+          format_err: ${{ steps.fmt.outputs.stderr }}
+          init_out: ${{ steps.init.outputs.stdout }}
+          init_err: ${{ steps.init.outputs.stderr }}
+          validate_out: ${{ steps.validate.outputs.stdout }}
+          validate_err: ${{ steps.validate.outputs.stderr }}
+          plan: "${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const CODE_BLOCK = '```';
+            const fmt_result = '${{ steps.fmt.outcome }}' === 'failure' ? ':x:' : ':heavy_check_mark:';
+            const init_result = '${{ steps.init.outcome }}' === 'failure' ? ':x:' : ':heavy_check_mark:';
+            const validate_result = '${{ steps.validate.outcome }}' === 'failure' ? ':x:' : ':heavy_check_mark:';
+            const plan_result = '${{ steps.plan.outcome }}' === 'failure' ? ':x:' : ':heavy_check_mark:';
+            
+            const output = `
+            ### ${ fmt_result } Terraform Format and Style 🎨
+            <details><summary>Logs</summary>
+            Output
+
+            ${ CODE_BLOCK }diff
+            ${ process.env.format_out }
+            ${ CODE_BLOCK }
+            
+            Errors
+
+            ${ CODE_BLOCK }
+            ${ process.env.format_err }
+            ${ CODE_BLOCK }
+            </details> <!-- End Format Logs -->
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: 'End results'
+        shell: bash
+        run: |
+          echo fmt
+          test ${{ steps.fmt.outputs.exitcode }} -eq 0
